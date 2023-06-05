@@ -225,7 +225,7 @@ def checkpoint(acc, epoch):
     }
     if not os.path.isdir('checkpoint'):
         os.mkdir('checkpoint')
-    torch.save(state, f'./checkpoint/apple-{model}-{acc}' + '_'
+    torch.save(state, f'./checkpoint/apple-{args.model}-{acc}' + '_'
                + str(args.seed)+'.pth')
 
 
