@@ -1,0 +1,11 @@
+/__pycache__
+/.ipynb_checkpoints
+/checkpoint
+/wandb
+
+/results
+nohup.out
+train.log
+1.py 
+
+
