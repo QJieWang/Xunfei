@@ -57,7 +57,8 @@ class AppleDataset(Dataset):
         return len(self.img_list)
 
     def __getitem__(self, index):
-        label = None
+        label = []
+        # lable = None
         if self.split == "train":
             label = self.label[index]
             path = os.path.join(self.path, self.split, label, self.img_list[index])
