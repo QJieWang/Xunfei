@@ -31,7 +31,9 @@ Apple_train_transform = A.Compose([
     A.Resize(256, 256),  # 缩放到256*256
     A.RandomCrop(224, 224),  # 随机裁剪到224*224
     A.HorizontalFlip(p=0.5),  # 水平翻转
-    A.VerticalFlip(p=0.5),
+    A.RandomGridShuffle(),  # 随机网格洗牌
+    A.GaussianBlur(),  # 高斯模糊
+    A.VerticalFlip(p=0.5),  # 垂直翻转
     A.RandomContrast(p=0.5),  # 随机对比度对比度范围Default: (-0.2, 0.2)
     A.RandomBrightnessContrast(p=0.5),   # 随机亮度和对比度，两个范围都是(-0.2, 0.2)
     A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),  # ？不知道为什么要缩放到这个范围，可能是使用了预训练权重吧
