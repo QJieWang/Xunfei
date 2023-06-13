@@ -15,11 +15,11 @@ import random
 from utils import WarmupReduceLROnPlateau
 parser = argparse.ArgumentParser(description='PyTorch Apple Testing')
 parser.add_argument('--use_cuda', default=True, type=bool, help='use cuda or not')  # 使用GPU
-parser.add_argument('--gpu', default='0', type=str, help='gpu id')  # GPU id
+parser.add_argument('--gpu', default='5', type=str, help='gpu id')  # GPU id
 parser.add_argument('--data', default="/home/medicaldata/WTJData/xunfei/苹果病害图像识别挑战赛公开数据/", metavar='DIR', help='path to dataset')  # 数据集路径
 parser.add_argument('--model', default='regnet', type=str, help='model')  # 模型
 parser.add_argument('--batch_size', default=64, type=int, help='batch size')  # 批大小
-parser.add_argument('--checkpoint', default="/home/image003/xunfei/apple-regnet-0.9871.pth", type=str, help='checkpoint')  # 多线程
+parser.add_argument('--checkpoint', default="/home/image003/xunfei/apple-regnet-mixup-0.9949.pth", type=str, help='checkpoint')  # 多线程
 args = parser.parse_args()
 if "regnet" in args.model:
     # 加载模型
@@ -32,6 +32,7 @@ if args.use_cuda:
 else:
     device = 'cpu'
 model = model.to(device)
+# args.checkpoint = "/home/image003/xunfei/apple-regnet-mixup-0.9949.pth"
 checkpoint = torch.load(args.checkpoint)
 
 accuracy = re.search(r'\d+\.\d+', args.checkpoint).group()
