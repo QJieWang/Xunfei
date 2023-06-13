@@ -14,7 +14,7 @@ from utils import WarmupReduceLROnPlateau
 # 解析命令行参数
 parser = argparse.ArgumentParser(description='PyTorch Apple Training')
 parser.add_argument('--use_cuda', default=True, type=bool, help='use cuda or not')  # 使用GPU
-parser.add_argument('--gpu', default='0', type=str, help='gpu id')  # GPU id
+parser.add_argument('--gpu', default='4', type=str, help='gpu id')  # GPU id
 parser.add_argument('--data', default="/home/medicaldata/WTJData/xunfei/苹果病害图像识别挑战赛公开数据/", metavar='DIR', help='path to dataset')  # 数据集路径
 parser.add_argument('--model', default='regnet', type=str, help='model')  # 模型
 parser.add_argument("--num_workers", default=8, type=int, help='number of workers')  # 多线程加载数据
@@ -26,7 +26,7 @@ parser.add_argument('--resume', '-r', action='store_true', help='resume from che
 parser.add_argument('--name', default='apple', type=str, help='name of experiment')  # 实验名称
 parser.add_argument('--seed', default=9617, type=int, help='random seed')  # 随机种子
 parser.add_argument('--batch_size', default=64, type=int, help='batch size')  # 批大小
-parser.add_argument('--epoch', default=400, type=int, help='total epochs to run')  # 总共训练多少个epoch
+parser.add_argument('--epoch', default=500, type=int, help='total epochs to run')  # 总共训练多少个epoch
 parser.add_argument('--mixup', default=False, type=float, help='mixup alpha')  # mixup参数
 parser.add_argument('--alpha', default=0.2, type=float,
                     help='mixup/cutmix alpha (default: 1)')
@@ -35,14 +35,7 @@ args = parser.parse_args()
 
 best_acc = 0  # best test accuracy
 start_epoch = 0  # start from epoch 0 or last checkpoint epoch
-Data_train = AppleDataset(args.data, "train", transform=Apple_train_transform)
-Data_test = AppleDataset(args.data, "test", transform=Apple_test_transform)
-trainloader = torch.utils.data.DataLoader(Data_train,
-                                          batch_size=args.batch_size,
-                                          shuffle=True, num_workers=8)
-testloader = torch.utils.data.DataLoader(Data_test,
-                                         batch_size=args.batch_size,
-                                         shuffle=False, num_workers=8)
+
 if "regnet" in args.model:
     # 加载模型
     model = My_regnet(num_classes=10)
@@ -83,7 +76,7 @@ if args.resume:
     # Load checkpoint.
     print('==> Resuming from checkpoint..')
     assert os.path.isdir('checkpoint'), 'Error: no checkpoint directory found!'
-    checkpoint = torch.load('/home/image003/xunfei/checkpoint/apple-0.9298795416707473.pt')
+    checkpoint = torch.load('/home/image003/xunfei/checkpoint/apple-regnet-mixup-0.9903045734991676_9617.pth')
     model.load_state_dict(checkpoint['model_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
     for state in optimizer.state.values():
@@ -91,10 +84,13 @@ if args.resume:
             if isinstance(v, torch.Tensor):
                 state[k] = v.to(device)
     best_acc = checkpoint['acc']
+    best_acc = 0
     start_epoch = checkpoint['epoch'] + 1
+    start_epoch = 0  # TODO: 等删除
     rng_state = checkpoint['rng_state']
     torch.set_rng_state(rng_state)
     print('==> Loaded checkpoint at epoch: %d, with loss: %.3f, acc: %.3f')
+    model.to(device)
 if not os.path.isdir('results'):
     os.mkdir('results')
 model = model.to(device)
@@ -225,12 +221,31 @@ def checkpoint(acc, epoch):
     }
     if not os.path.isdir('checkpoint'):
         os.mkdir('checkpoint')
-    torch.save(state, f'./checkpoint/apple-{args.model}-{acc}' + '_'
+    torch.save(state, f'./checkpoint/apple-{args.model}-{transform_model}-{acc}' + '_'
                + str(args.seed)+'.pth')
 
 
 if __name__ == '__main__':
-    # 这里明天重写
+    # TODO:这里明天重写
+    # self.label_map = {"d1": 0, "d2": 1, "d3": 2, "d4": 3, "d5": 4, "d6": 5, "d7": 6, "d8": 7, "d9": 8}
+    # d1 黑斑病, d2 褐斑病, d3 青枯叶斑病, d4 灰斑病,d5 健康,d6 花叶病毒病,d7 白粉病,d8 锈病,d9 疮痂病
+    from torch.utils.data import DataLoader, WeightedRandomSampler
+    class_num = {'d1': 292, 'd2': 288, 'd3': 2227, 'd4': 238, 'd5': 362, 'd6': 260, 'd7': 829, 'd8': 1928, 'd9': 3787}
+    class_counts = [292, 288, 2227, 238, 362, 260, 829, 1928, 3787]
+    class_weights = [sum(class_counts) / c for c in class_counts]
+    class_weights = torch.FloatTensor(class_weights).to(device)
+    sampler = WeightedRandomSampler(class_weights, sum(class_counts), replacement=True)
+    Data_train = AppleDataset(args.data, "train", transform=Apple_train_transform)
+    Data_test = AppleDataset(args.data, "test", transform=Apple_test_transform)
+    # trainloader = torch.utils.data.DataLoader(Data_train,
+    #                                           batch_size=args.batch_size,
+    #                                           shuffle=True, num_workers=8, sampler=sampler)
+    trainloader = torch.utils.data.DataLoader(Data_train,
+                                              batch_size=args.batch_size,
+                                              num_workers=8, shuffle=True)
+    testloader = torch.utils.data.DataLoader(Data_test,
+                                             batch_size=args.batch_size,
+                                             shuffle=False, num_workers=8)
     for epoch in range(start_epoch, start_epoch + args.epoch):
         train(trainloader, model, criterion, optimizer, scheduler)
 
@@ -240,3 +255,5 @@ if __name__ == '__main__':
         if acc > best_acc:
             best_acc = acc
             checkpoint(acc, epoch)
+            if best_acc > 0.999:
+                best_acc = 0.99-0.02
