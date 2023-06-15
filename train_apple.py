@@ -22,11 +22,11 @@ parser.add_argument('--lr', default=0.1, type=float, help='learning rate')  # �
 # args.warmup_epochs, args.warmup_factor,
 parser.add_argument("--warmup_epochs", default=5, type=int, help='warmup epochs')  # warmup epochs")
 parser.add_argument("--warmup_factor", default=2, type=float, help='warmup factor')  # warmup factor
-parser.add_argument('--resume', '-r', action='store_true', help='resume from checkpoint')  # 是否从断点处恢复训练
+parser.add_argument('--resume', '-r', default=False, action='store_true', help='resume from checkpoint')  # 是否从断点处恢复训练
 parser.add_argument('--name', default='apple', type=str, help='name of experiment')  # 实验名称
 parser.add_argument('--seed', default=9617, type=int, help='random seed')  # 随机种子
-parser.add_argument('--batch_size', default=64, type=int, help='batch size')  # 批大小
-parser.add_argument('--epoch', default=500, type=int, help='total epochs to run')  # 总共训练多少个epoch
+parser.add_argument('--batch_size', default=25, type=int, help='batch size')  # 批大小
+parser.add_argument('--epoch', default=400, type=int, help='total epochs to run')  # 总共训练多少个epoch
 parser.add_argument('--mixup', default=False, type=float, help='mixup alpha')  # mixup参数
 parser.add_argument('--alpha', default=0.2, type=float,
                     help='mixup/cutmix alpha (default: 1)')
@@ -38,9 +38,9 @@ start_epoch = 0  # start from epoch 0 or last checkpoint epoch
 
 if "regnet" in args.model:
     # 加载模型
-    model = My_regnet(num_classes=10)
+    model = My_regnet(num_classes=9)
 else:
-    model = My_efficientnet(num_classes=10)
+    model = My_efficientnet(num_classes=9)
 optimizer = torch.optim.AdamW(model.parameters(),  lr=args.lr)
 now = time.strftime('%Y-%m-%d-%HH', time.localtime())
 wandb.init(
@@ -71,7 +71,7 @@ wandb.init(
     config=args,  # 配置
 )
 
-args.resume = True
+print(f"args.resume={args.resume}")
 if args.resume:
     # Load checkpoint.
     print('==> Resuming from checkpoint..')

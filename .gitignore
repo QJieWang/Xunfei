@@ -8,6 +8,9 @@ nohup.out
 train.log
 1.py 
 *.pth
+*.tar 
+*.gz 
+
 
 
 

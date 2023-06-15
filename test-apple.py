@@ -23,9 +23,9 @@ parser.add_argument('--checkpoint', default="/home/image003/xunfei/apple-regnet-
 args = parser.parse_args()
 if "regnet" in args.model:
     # 加载模型
-    model = My_regnet(num_classes=10)
+    model = My_regnet(num_classes=9)
 else:
-    model = My_efficientnet(num_classes=10)
+    model = My_efficientnet(num_classes=9)
 if args.use_cuda:
     assert torch.cuda.is_available(), 'No GPU Found!'
     device = 'cuda:' + args.gpu
