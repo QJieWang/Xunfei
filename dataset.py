@@ -73,52 +73,75 @@ class AppleDataset(Dataset):
         return img, label, self.img_list[index]
 
 
+# class BuildingDataset(Dataset):
+#     """
+#     这里的Transform写的不是特别好，但是确实第一次遇到三张图片的情况，所以将Transform分别写
+
+#     Args:
+#         Dataset (_type_): _description_
+#     """
+
+#     def __init__(self, paht, split, transform=[None]*3) -> None:
+#         super().__init__()
+#         self.path = paht
+#         self.transform_1, self.transform_2, self.transform_3 = transform
+#         self.split = split
+#         self.img_list, self.label = self.get_img_list(os.path.join(self.path, split))
+#         # 初赛测试集  初赛训练集
+
+#     def get_img_list(self, path):
+#         img_list = []
+#         img_label = []
+
+#         temp_1 = os.listdir(os.path.join(path, "Image1"))
+#         temp_2 = os.listdir(os.path.join(path, "Image2"))
+#         if temp_1 != temp_2:
+#             assert "Image1和Image2的文件名不一致"
+#         else:
+#             img_list = temp_1
+#         if self.split == "初赛训练集":
+#             img_label += os.listdir(os.path.join(path,  "label1"))
+#         return img_list, img_label
+
+#     def __len__(self):
+#         return len(self.img_list)
+
+#     def __getitem__(self, index):
+#         label = None
+#         img_1 = Image.open(os.path.join(self.path, self.split, "Image1", self.img_list[index]))
+#         img_2 = Image.open(os.path.join(self.path, self.split, "Image2", self.img_list[index]))
+#         if self.split == "初赛训练集":
+#             label = Image.open(os.path.join(self.path, self.split, "label1", self.label[index]))
+#         if self.transform_1:
+#             img_1 = self.transform_1(img_1)
+#         if self.transform_2:
+#             img_2 = self.transform_2(img_2)
+#         if self.transform_3:
+#             label = self.transform_3(label)
+#         return np.array(img_1), np.array(img_2), np.array(label), self.img_list[index]
+
+
 class BuildingDataset(Dataset):
-    """
-    这里的Transform写的不是特别好，但是确实第一次遇到三张图片的情况，所以将Transform分别写
-
-    Args:
-        Dataset (_type_): _description_
-    """
-
-    def __init__(self, paht, split, transform=[None]*3) -> None:
+    def __init__(self, img_path, transform=None) -> None:
         super().__init__()
-        self.path = paht
-        self.transform_1, self.transform_2, self.transform_3 = transform
-        self.split = split
-        self.img_list, self.label = self.get_img_list(os.path.join(self.path, split))
-        # 初赛测试集  初赛训练集
-
-    def get_img_list(self, path):
-        img_list = []
-        img_label = []
-
-        temp_1 = os.listdir(os.path.join(path, "Image1"))
-        temp_2 = os.listdir(os.path.join(path, "Image2"))
-        if temp_1 != temp_2:
-            assert "Image1和Image2的文件名不一致"
+        if transform is not None:
+            self.transform = transform
         else:
-            img_list = temp_1
-        if self.split == "初赛训练集":
-            img_label += os.listdir(os.path.join(path,  "label1"))
-        return img_list, img_label
-
-    def __len__(self):
-        return len(self.img_list)
+            self.transform = None
+        self.img_path = img_path
 
     def __getitem__(self, index):
-        label = None
-        img_1 = Image.open(os.path.join(self.path, self.split, "Image1", self.img_list[index]))
-        img_2 = Image.open(os.path.join(self.path, self.split, "Image2", self.img_list[index]))
-        if self.split == "初赛训练集":
-            label = Image.open(os.path.join(self.path, self.split, "label1", self.label[index]))
-        if self.transform_1:
-            img_1 = self.transform_1(img_1)
-        if self.transform_2:
-            img_2 = self.transform_2(img_2)
-        if self.transform_3:
-            label = self.transform_3(label)
-        return np.array(img_1), np.array(img_2), np.array(label), self.img_list[index]
+        img_1 = Image.open(self.img_path["img1_path"][index])
+        img_2 = Image.open(self.img_path["img2_path"][index])
+        mask = Image.open(self.img_path["label_path"][index])
+        if self.transform:
+            temp = self.transform(image=img_1, image0=img_2, mask=mask)
+            img_1, img_2, mask = temp["image"], temp["image0"], temp["mask"]
+        file_name = self.img_path["img1_path"][index].split("/")[-1]
+        return img_1, img_2, mask, file_name
+
+    def __len__(self):
+        return len(self.img_path)
 
 
 if __name__ == '__main__':
@@ -127,7 +150,13 @@ if __name__ == '__main__':
     Data_test = AppleDataset(path[0], "test")
     print(Data_train[0])
     print(Data_test[0])
-    Data_train = BuildingDataset(path[1], "初赛训练集")
-    Data_test = BuildingDataset(path[1], "初赛测试集")
-    print(Data_train[0])
-    print(Data_test[0])
+    from glob import glob
+    import numpy as np
+    import pandas as pd
+    temp = glob("/home/medicaldata/WTJData/xunfei/高分辨率遥感影像建筑物变化检测挑战赛公开数据-初赛/初赛训练集/Image1/*")
+    temp2 = glob("/home/medicaldata/WTJData/xunfei/高分辨率遥感影像建筑物变化检测挑战赛公开数据-初赛/初赛训练集/Image2/*")
+    label = glob("/home/medicaldata/WTJData/xunfei/高分辨率遥感影像建筑物变化检测挑战赛公开数据-初赛/初赛训练集/label1/*")
+    df = pd.DataFrame(data={"img1_path": np.array(temp), "img2_path": np.array(temp2), "label_path": label})
+    Data = BuildingDataset(df)
+    print(Data[0])
+    print("ok")
