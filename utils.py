@@ -45,4 +45,44 @@ class WarmupReduceLROnPlateau:
             param_group['lr'] = warmup_lr
 
 
-def miou(imgs, targets):
+def mIoU(predictions, targets, info=False):  # Mean per class accuracy
+    unique_labels = np.unique(targets)
+    num_unique_labels = len(unique_labels)
+    ious = []
+    for index in range(num_unique_labels):
+        pred_i = predictions == index
+        label_i = targets == index
+        intersection = np.logical_and(label_i, pred_i)
+        union = np.logical_or(label_i, pred_i)
+        iou_score = np.sum(intersection.numpy())/np.sum(union.numpy())
+        ious.append(iou_score)
+    if info:
+        print("per-class mIOU: ", ious)
+    return np.mean(ious)
+
+
+def get_predictions(output):
+    bs, c, h, w = output.size()
+    values, indices = output.cpu().max(1)
+    indices = indices.view(bs, h, w)  # bs x h x w
+    return indices
+
+
+def mkdir(path: str):
+    """Create directory.
+     Create directory if it is not exist, else do nothing.
+     Parameters
+     ----------
+     path: str
+        Path of your directory.
+     Examples
+     --------
+     mkdir("data/raw/train/")
+     """
+    try:
+        if path is None:
+            pass
+        else:
+            os.stat(path)
+    except Exception:
+        os.makedirs(path)

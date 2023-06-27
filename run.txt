@@ -1,2 +1,7 @@
 nohup /usr/bin/python3.6 train_apple.py -r --mixup 1 --cutmix 0 --gpu 4 > train.log  &
 nohup /usr/bin/python3.6 train_apple.py -r --mixup 0 --cutmix 1 --gpu 5 &
+
+
+nohup /usr/bin/python3.6 train_Building.py  --gpu 5 > train_building.log  &
+
+

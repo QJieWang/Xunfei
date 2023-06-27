@@ -48,20 +48,20 @@ Apple_test_transform = A.Compose([
 
 Building_train_transform = A.Compose([
     A.RandomRotate90(),  # 随机旋转90度(图像和标签同时旋转)
-    A.Resize(512,512),  # 缩放到256*256
-    A.RandomCrop(256, 256),  # 随机裁剪到224*224
+    # A.Resize(512, 512),  # 缩放到256*256
+    # A.RandomCrop(256, 256),  # 随机裁剪到224*224
     A.VerticalFlip(p=0.5),
     A.HorizontalFlip(p=0.5),  # 水平翻转
     A.RandomContrast(p=0.5),  # 随机对比度对比度范围Default: (-0.2, 0.2)
     A.RandomBrightnessContrast(p=0.5),   # 随机亮度和对比度，两个范围都是(-0.2, 0.2)
-    # A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),  # ？不知道为什么要缩放到这个范围，可能是使用了预训练权重吧
+    A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),  # ？不知道为什么要缩放到这个范围，可能是使用了预训练权重吧
     A.pytorch.ToTensorV2()  # 转换为tensor
 ], additional_targets={'image0': 'image', }
 )
 Building_test_transform = A.Compose([
-    A.Resize(512, 512),  # 缩放到256*256
-    A.RandomCrop(256, 256),  # 随机裁剪到224*224
-    # A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),  # ？不知道为什么要缩放到这个范围，可能是使用了预训练权重吧
+    # A.Resize(512, 512),  # 缩放到256*256
+    # A.RandomCrop(256, 256),  # 随机裁剪到224*224
+    A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),  # ？不知道为什么要缩放到这个范围，可能是使用了预训练权重吧
     A.pytorch.ToTensorV2()  # 转换为tensor
 ], additional_targets={'image0': 'image', })
 
@@ -99,19 +99,33 @@ if __name__ == '__main__':
     # show([img, img_new], file_name="test_apple.png")
     # Trans_test = Apple_test_transform
     # 测试建筑物数据增强
-    Data_train = BuildingDataset(path[1], "初赛训练集")
-    Data_test = BuildingDataset(path[1], "初赛测试集")
+    # Data_train = BuildingDataset(path[1], "初赛训练集")
+    # Data_test = BuildingDataset(path[1], "初赛测试集")
 
-    Trans_test = Building_test_transform
-    # 保存训练集结果
+    # Trans_test = Building_test_transform
+    # # 保存训练集结果
+    # Trans_train = Building_train_transform
+    # img_1, img_2, mask, index = Data_train[0]
+    # temp = Trans_train(image=img_1, image0=img_2, mask=mask)
+    # img_new_1, img_new_2, mask_new = temp["image"], temp["image0"], temp["mask"]
+    # show([img_1, img_2, img_new_1, img_new_2, mask, mask_new], file_name="train_Building.png")
+    # # 保存测试集结果
+    # Trans_test = Building_test_transform
+    # img_1, img_2, mask, index = Data_test[0]
+    # temp = Trans_test(image=img_1, image0=img_2)
+    # img_new_1, img_new_2 = temp["image"], temp["image0"]
+    # show([img_1, img_2, img_new_1, img_new_2], file_name="test_Building.png")
+    from glob import glob
+    import numpy as np
+    import pandas as pd
+    temp = glob("/home/medicaldata/WTJData/xunfei/高分辨率遥感影像建筑物变化检测挑战赛公开数据-初赛/初赛训练集/Image1/*")
+    temp2 = glob("/home/medicaldata/WTJData/xunfei/高分辨率遥感影像建筑物变化检测挑战赛公开数据-初赛/初赛训练集/Image2/*")
+    label = glob("/home/medicaldata/WTJData/xunfei/高分辨率遥感影像建筑物变化检测挑战赛公开数据-初赛/初赛训练集/label1/*")
+    df = pd.DataFrame(data={"img1_path": np.array(temp), "img2_path": np.array(temp2), "label_path": label})
     Trans_train = Building_train_transform
-    img_1, img_2, mask, index = Data_train[0]
+    Data = BuildingDataset(df, transform=Building_train_transform)
+    img_1, img_2, mask, index = Data[0]
     temp = Trans_train(image=img_1, image0=img_2, mask=mask)
     img_new_1, img_new_2, mask_new = temp["image"], temp["image0"], temp["mask"]
-    show([img_1, img_2, img_new_1, img_new_2, mask, mask_new], file_name="train_Building.png")
-    # 保存测试集结果
-    Trans_test = Building_test_transform
-    img_1, img_2, mask, index = Data_test[0]
-    temp = Trans_test(image=img_1, image0=img_2)
-    img_new_1, img_new_2 = temp["image"], temp["image0"]
-    show([img_1, img_2, img_new_1, img_new_2], file_name="test_Building.png")
+
+    print("ok")

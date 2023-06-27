@@ -11,6 +11,10 @@ train.log
 *.tar 
 *.gz 
 *.csv 
+/submit*
+/resnet50
+/output
+
 
 
 

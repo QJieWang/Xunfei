@@ -132,12 +132,13 @@ class BuildingDataset(Dataset):
         self.split = split
 
     def __getitem__(self, index):
-        img_1 = Image.open(self.img_path["img1_path"][index])
-        img_2 = Image.open(self.img_path["img2_path"][index])
+        img_1 = np.array(Image.open(self.img_path["img1_path"][index]))
+        img_2 = np.array(Image.open(self.img_path["img2_path"][index]))
         if self.split == "train":
-            mask = Image.open(self.img_path["label_path"][index])
+            # mask = cv2.imread(self.img_path["label_path"][index])
+            mask = np.array(Image.open(self.img_path["label_path"][index]))
         else:
-            mask = None
+            mask = []
         if self.transform:
             if self.split == "train":
                 temp = self.transform(image=img_1, image0=img_2, mask=mask)
@@ -146,7 +147,7 @@ class BuildingDataset(Dataset):
                 temp = self.transform(image=img_1, image0=img_2)
                 img_1, img_2 = temp["image"], temp["image0"]
         file_name = self.img_path["img1_path"][index].split("/")[-1]
-        return img_1, img_2, mask, file_name
+        return np.array(img_1), np.array(img_2), np.array(mask), file_name
 
     def __len__(self):
         return len(self.img_path)

@@ -134,6 +134,7 @@ def train(trainloader, model, criterion, optimizer, scheduler):
         print('Train loss', loss.item())
 
         train_loss += loss.item()
+    
     print('Train loss', train_loss / len(trainloader))
     print('Top1 accuracy', top1_correct / len(trainloader))
     print('Top5 accuracy', top5_correct / len(trainloader))
