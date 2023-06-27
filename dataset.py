@@ -122,21 +122,29 @@ class AppleDataset(Dataset):
 
 
 class BuildingDataset(Dataset):
-    def __init__(self, img_path, transform=None) -> None:
+    def __init__(self, img_path, transform=None, split="train") -> None:
         super().__init__()
         if transform is not None:
             self.transform = transform
         else:
             self.transform = None
         self.img_path = img_path
+        self.split = split
 
     def __getitem__(self, index):
         img_1 = Image.open(self.img_path["img1_path"][index])
         img_2 = Image.open(self.img_path["img2_path"][index])
-        mask = Image.open(self.img_path["label_path"][index])
+        if self.split == "train":
+            mask = Image.open(self.img_path["label_path"][index])
+        else:
+            mask = None
         if self.transform:
-            temp = self.transform(image=img_1, image0=img_2, mask=mask)
-            img_1, img_2, mask = temp["image"], temp["image0"], temp["mask"]
+            if self.split == "train":
+                temp = self.transform(image=img_1, image0=img_2, mask=mask)
+                img_1, img_2, mask = temp["image"], temp["image0"], temp["mask"]
+            else:
+                temp = self.transform(image=img_1, image0=img_2)
+                img_1, img_2 = temp["image"], temp["image0"]
         file_name = self.img_path["img1_path"][index].split("/")[-1]
         return img_1, img_2, mask, file_name
 

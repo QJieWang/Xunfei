@@ -43,3 +43,6 @@ class WarmupReduceLROnPlateau:
         warmup_lr = self.current_lr * (self.current_epoch / self.warmup_epochs) * self.warmup_factor
         for param_group in self.optimizer.param_groups:
             param_group['lr'] = warmup_lr
+
+
+def miou(imgs, targets):

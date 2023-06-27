@@ -48,8 +48,8 @@ Apple_test_transform = A.Compose([
 
 Building_train_transform = A.Compose([
     A.RandomRotate90(),  # 随机旋转90度(图像和标签同时旋转)
-    A.Resize(256, 256),  # 缩放到256*256
-    A.RandomCrop(224, 224),  # 随机裁剪到224*224
+    A.Resize(512,512),  # 缩放到256*256
+    A.RandomCrop(256, 256),  # 随机裁剪到224*224
     A.VerticalFlip(p=0.5),
     A.HorizontalFlip(p=0.5),  # 水平翻转
     A.RandomContrast(p=0.5),  # 随机对比度对比度范围Default: (-0.2, 0.2)
@@ -59,8 +59,8 @@ Building_train_transform = A.Compose([
 ], additional_targets={'image0': 'image', }
 )
 Building_test_transform = A.Compose([
-    A.Resize(256, 256),  # 缩放到256*256
-    A.RandomCrop(224, 224),  # 随机裁剪到224*224
+    A.Resize(512, 512),  # 缩放到256*256
+    A.RandomCrop(256, 256),  # 随机裁剪到224*224
     # A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),  # ？不知道为什么要缩放到这个范围，可能是使用了预训练权重吧
     A.pytorch.ToTensorV2()  # 转换为tensor
 ], additional_targets={'image0': 'image', })

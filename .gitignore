@@ -10,7 +10,7 @@ train.log
 *.pth
 *.tar 
 *.gz 
-
+*.csv 
 
 
 

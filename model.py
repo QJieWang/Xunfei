@@ -2,6 +2,7 @@ from torchvision.models import regnet_y_16gf, efficientnet_b6
 import torch.nn as nn
 
 
+
 class My_regnet(nn.Module):
     def __init__(self, num_classes):
         super(My_regnet, self).__init__()
